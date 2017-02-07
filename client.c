@@ -16,7 +16,7 @@ int main(int argc, char const *argv[]) {
    struct sockaddr_in client_addr; /* armazena o endereco do cliente */
    socklen_t addr_len = sizeof (client_addr); /* define o tamanho do endereco do servidor local */
    int sockfd, /* socket cliente */
-      msgLenght; /* tamanho da mensagem */
+      msgLength; /* tamanho da mensagem */
    char msg[MSG_LEN];
 
    /* Inicializar o socket
@@ -37,23 +37,31 @@ int main(int argc, char const *argv[]) {
    /* Estabelece-se a ligação */
    connect (sockfd, (struct sockaddr*)&client_addr, addr_len); /* o cliente bloqueia até conseguir a ligacao */
 
-   /* Enviar e receber dados */
-   fgets (msg, 100, stdin);
-   msg [strlen(msg)-1] = '\0'; /* elimina o caracter enter do fgets */
+   while (1){ /* envia continuamente dados, enquanto nao enviar # */
+      /* Enviar e receber dados */
+      fgets (msg, 100, stdin);
+      msg [strlen(msg)-1] = '\0'; /* elimina o caracter enter do fgets */
 
-   msgLenght = send (sockfd /* confirmar esta variavel */, msg, strlen(msg)+1, 0);
-   if (msgLenght < 0) {
-      printf("Ocorreu um erro ao receber a mensagem.\n");
-      return -1;
+      msgLength = send (sockfd /* confirmar esta variavel */, msg, strlen(msg)+1, 0);
+      if (msgLength < 0) {
+         printf("Ocorreu um erro ao receber a mensagem.\n");
+         return -1;
+      }
+
+      if (msg[0] == '#')
+         break;
+
+      msgLength = recv (sockfd, msg, msgLength, 0);
+      if (msgLength < 0) {
+         printf("Ocorreu um erro ao receber a mensagem.\n");
+         return -1;
+      }
+
+      printf("%s\n",msg);
    }
 
-   msgLenght = recv (sockfd, msg, MSG_LEN, 0);
-   if (msgLenght < 0) {
-      printf("Ocorreu um erro ao receber a mensagem.\n");
-      return -1;
-   }
-
-   puts (msg);
+   shutdown (sockfd, 2);
+   close (sockfd);
 
    return 0;
 

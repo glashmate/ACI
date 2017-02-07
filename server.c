@@ -46,18 +46,23 @@ int main(int argc, char const *argv[]) {
    listen (sockfd, 10); /* O servidor pode ter até 10 clientes em espera para estabelecer uma ligacao */
    newsockfd = accept(sockfd, (struct sockaddr*)&client_addr, &addr_len);
 
-   msgLenght = recv (newsockfd, buffer, BUF_LEN, 0);
-   if (msgLenght < 0) {
-      printf("Ocorreu um erro ao receber a mensagem.\n");
-      return -1;
-   }
+   while (1){ /* recebe continuamente dados, enquanto nao receber # */
+     msgLenght = recv (newsockfd, buffer, BUF_LEN, 0);
+     if (msgLenght < 0) {
+        printf("Ocorreu um erro ao receber a mensagem.\n");
+        return -1;
+     }
 
-   char* newBuffer = uppercase (buffer);
+     if (buffer[0] == '#')
+        break;
 
-   msgLenght = send (newsockfd, newBuffer, strlen(newBuffer), 0);
-   if (msgLenght < 0) {
-      printf("Ocorreu um erro ao receber a mensagem.\n");
-      return -1;
+     char* newBuffer = uppercase (buffer);
+
+     msgLenght = send (newsockfd, newBuffer, strlen(newBuffer), 0);
+     if (msgLenght < 0) {
+        printf("Ocorreu um erro ao receber a mensagem.\n");
+        return -1;
+     }
    }
 
    shutdown (sockfd, 2);
