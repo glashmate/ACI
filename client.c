@@ -39,6 +39,8 @@ int main(int argc, char const *argv[]) {
 
    /* Enviar e receber dados */
    fgets (msg, 100, stdin);
+   msg [strlen(msg)] = '\0'; /* elimina o caracter enter do fgets */
+
    msgLenght = send (sockfd /* confirmar esta variavel */, msg, strlen(msg)+1, 0);
    if (msgLenght < 0) {
       printf("Ocorreu um erro ao receber a mensagem.\n");
