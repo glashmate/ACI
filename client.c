@@ -3,9 +3,8 @@
 
 /* Bibliotecas obrigatorias para se poder utilizar sockets */
 #include <sys/types.h>
-#include <sys/sockets.h>
-#include <netinet.h>
-#include "socketaddr.h"
+#include <sys/socket.h>
+#include <netinet/in.h>
 
 #define PORT 22222
 #define IP "127.0.0.1"
@@ -13,22 +12,47 @@
 
 int main(int argc, char const *argv[]) {
 
-   /* Inicializacao do servidor */
-   struct sockaddr_in server; /* armazena o endereco do servidor */
-   socklen_t addressLength = sizeof (server); /* define o tamanho do endereco do servidor local */
+   /* Inicializacao do cliente */
+   struct sockaddr_in client_addr; /* armazena o endereco do cliente */
+   socklen_t addr_len = sizeof (client_addr); /* define o tamanho do endereco do servidor local */
    int sockfd, /* socket cliente */
       msgLenght; /* tamanho da mensagem */
    char msg[MSG_LEN];
 
-   sockfd = socket (PF_INET, SOCK_STREAM, IPPROTO_TCP /*0*/); /* criacao do socket do servidor */
-   server. sin_family = AF_INET;
-   server.sin_port = htons (PORT);
+   /* Inicializar o socket
+    * PF_INET - para indicar que queremos usar IP
+    * SOCK_STREAM - para indicar que queremos usar TCP
+    * 0 - para indicar que estamos num unico protocolo
+    */
+   sockfd = socket (PF_INET, SOCK_STREAM, 0); /* criacao do socket do servidor */
+   if (sockfd < 0) {
+      printf ("Ocorreu um erro ao criar o socket.");
+      return -1;
+   }
 
-   inet_aton (IP, &server.sin_addr);
+   client_addr. sin_family = AF_INET;
+   client_addr.sin_port = htons (PORT);
+   inet_aton (IP, &client_addr.sin_addr);
 
-   connect (sock, (struct sockaddr*)&server, addressLength);
+   /* Estabelece-se a ligação */
+   connect (sockfd, (struct sockaddr*)&client_addr, addr_len); /* o cliente bloqueia até conseguir a ligacao */
 
-   fgets (buf, 100, stdin);
+   /* Enviar e receber dados */
+   fgets (msg, 100, stdin);
    msgLenght = send (sockfd /* confirmar esta variavel */, msg, strlen(msg)+1, 0);
+   if (msgLenght < 0) {
+      printf("Ocorreu um erro ao receber a mensagem.\n");
+      return -1;
+   }
+
+   msgLenght = recv (sockfd, msg, MSG_LEN, 0);
+   if (msgLenght < 0) {
+      printf("Ocorreu um erro ao receber a mensagem.\n");
+      return -1;
+   }
+
+   puts (msg);
+
+   return 0;
 
 }

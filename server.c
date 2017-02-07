@@ -1,10 +1,11 @@
+
+
 #include <stdio.h>
 
 /* Bibliotecas obrigatorias para se poder utilizar sockets */
 #include <sys/types.h>
-#include <sys/sockets.h>
-#include <netinet.h>
-#include "socketaddr.h"
+#include <sys/socket.h>
+#include <netinet/in.h>
 
 #define PORT 22222
 #define IP "127.0.0.1"
@@ -13,24 +14,50 @@
 int main(int argc, char const *argv[]) {
 
    /* Inicializacao do servidor */
-   struct sockaddr_in local, remote; /* armazena o endereco do socket */
-   socklen_t addressLength = sizeof (local); /* define o tamanho do endereco do servidor local */
-   int sock, /* socket servidor */
-      sockfd, /* socket cliente */
+   struct sockaddr_in server_addr, client_addr; /* armazena o endereco do socket */
+   socklen_t addr_len = sizeof (server_addr); /* define o tamanho do endereco do servidor local */
+   int sockfd, /* socket servidor */
+      newsockfd, /* socket cliente */
       msgLenght; /* tamanho da mensagem */
    char buffer[BUF_LEN];
 
-   sock = socket (PF_INET, SOCK_STREAM, IPPROTO_TCP /*0*/); /* criacao do socket do servidor */
-   local. sin_family = AF_INET;
-   local.sin_port = htons (PORT);
+   /* Inicializar o socket
+    * PF_INET - para indicar que queremos usar IP
+    * SOCK_STREAM - para indicar que queremos usar TCP
+    * 0 - para indicar que estamos num unico protocolo
+    */
+   sockfd = socket (PF_INET, SOCK_STREAM, 0); /* criacao do socket do servidor */
+   if (sockfd < 0){
+      printf ("Ocorreu um erro ao criar o socket.");
+      return -1;
+   }
 
-   inet_aton (IP, &local.sin_addr);
+   server_addr. sin_family = AF_INET;
+   server_addr.sin_port = htons (PORT);
+   inet_aton (IP, &server_addr.sin_addr); /* converte o endereco para um numero */
 
-   bind (sock, (struct sockaddr*)&local, addressLength);
+   /* Associamos o endereço ao socket */
+   bind (sockfd, (struct sockaddr*)&server_addr, addr_len);
 
-   listen (sock, 10);
-   sockfd = accept(sock, (struct sockaddr*)&remote, &addressLength);
+   /* Recebemos uma nova ligacao */
+   listen (sockfd, 10); /* O servidor pode ter até 10 clientes em espera para estabelecer uma ligacao */
+   newsockfd = accept(sockfd, (struct sockaddr*)&client_addr, &addr_len);
 
-   msgLenght = recv (sockfd, buffer, BUF_LEN, 0);
+   msgLenght = recv (newsockfd, buffer, BUF_LEN, 0);
+   if (msgLenght < 0) {
+      printf("Ocorreu um erro ao receber a mensagem.\n");
+      return -1;
+   }
 
+   msgLenght = send (newsockfd, buffer, BUF_LEN, 0);
+   if (msgLenght < 0) {
+      printf("Ocorreu um erro ao receber a mensagem.\n");
+      return -1;
+   }
+
+   shutdown (sockfd, 2);
+   close (newsockfd);
+   close (sockfd);
+
+   return 0;
 }
