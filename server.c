@@ -1,6 +1,7 @@
 
 
 #include <stdio.h>
+#include <string.h>
 
 /* Bibliotecas obrigatorias para se poder utilizar sockets */
 #include <sys/types.h>
@@ -10,6 +11,8 @@
 #define PORT 22222
 #define IP "127.0.0.1"
 #define BUF_LEN 100
+
+char* uppercase (char* msg);
 
 int main(int argc, char const *argv[]) {
 
@@ -49,7 +52,9 @@ int main(int argc, char const *argv[]) {
       return -1;
    }
 
-   msgLenght = send (newsockfd, buffer, BUF_LEN, 0);
+   char* newBuffer = uppercase (buffer);
+
+   msgLenght = send (newsockfd, newBuffer, strlen(newBuffer), 0);
    if (msgLenght < 0) {
       printf("Ocorreu um erro ao receber a mensagem.\n");
       return -1;
@@ -60,4 +65,15 @@ int main(int argc, char const *argv[]) {
    close (sockfd);
 
    return 0;
+}
+
+char* uppercase (char* msg) {
+  int i;
+
+  for (i = 0; i < strlen (msg); i++) {
+    if (msg[i] >= 97 && msg [i] <= 122)
+      msg[i] = msg[i] - (97-65);
+  }
+
+  return msg;
 }
