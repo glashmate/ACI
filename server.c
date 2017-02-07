@@ -13,7 +13,7 @@
 int main(int argc, char const *argv[]) {
 
    /* Inicializacao do servidor */
-   sockaddr_in local, remote; /* armazena o endereco do socket */
+   struct sockaddr_in local, remote; /* armazena o endereco do socket */
    socklen_t addressLength = sizeof (local); /* define o tamanho do endereco do servidor local */
    int sock, /* socket servidor */
       sockfd, /* socket cliente */

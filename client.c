@@ -14,7 +14,7 @@
 int main(int argc, char const *argv[]) {
 
    /* Inicializacao do servidor */
-   sockaddr_in server; /* armazena o endereco do servidor */
+   struct sockaddr_in server; /* armazena o endereco do servidor */
    socklen_t addressLength = sizeof (server); /* define o tamanho do endereco do servidor local */
    int sockfd, /* socket cliente */
       msgLenght; /* tamanho da mensagem */
